@@ -7,25 +7,14 @@ import {
   removeAuthUserData
 } from "./auth";
 
-export const axiosInstace = axios.create({
+export const axiosInstance = axios.create({
   baseURL: config.API_BASE_URL,
-  timeout: 20000
+  timeout: 20000,
+  withCredentials: true,
 });
 
 export const initAuthInterceptor = (store, errorAction) => {
-  axiosInstace.interceptors.request.use(response => {
-    const userAuth = getAuthUserData();
-
-    if (userAuth) {
-      response.headers.Authorization = `Bearer ${userAuth.accessToken}`;
-    } else {
-      delete response.headers.Authorization;
-    }
-
-    return response;
-  });
-
-  axiosInstace.interceptors.response.use(null, async error => {
+  axiosInstance.interceptors.response.use(null, async error => {
     const httpCode = 401;
     const originalRequest = error.config;
 
@@ -44,7 +33,7 @@ export const initAuthInterceptor = (store, errorAction) => {
 
         if (!checkTokenExpire(accessToken)) {
           try {
-            const response = await axiosInstace.post("auth/refresh-tokens", {
+            const response = await axiosInstance.post("auth/refresh-tokens", {
               refreshToken
             });
 
@@ -54,7 +43,7 @@ export const initAuthInterceptor = (store, errorAction) => {
               user: userAuth.user
             });
 
-            return axiosInstace(originalRequest);
+            return axiosInstance(originalRequest);
           } catch (e) {
             store.dispatch(errorAction());
             removeAuthUserData();
@@ -70,7 +59,7 @@ export const initAuthInterceptor = (store, errorAction) => {
 
 export const api = (requestType, url, payload) => {
   return new Promise((resolve, reject) => {
-    axiosInstace[requestType](url, payload)
+    axiosInstance[requestType](url, payload)
       .then(response => {
         resolve(response.data);
       })

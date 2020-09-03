@@ -1,16 +1,19 @@
 import decode from "jwt-decode";
+import cookies from "js-cookie";
 
 export const getAuthUserData = () => {
-  const data = localStorage.getItem("authUserData");
+  const data = cookies.get("authUserData");
   return data ? JSON.parse(data) : null;
 };
 
 export const setAuthUserData = data => {
-  localStorage.setItem("authUserData", JSON.stringify(data));
+  cookies.set("authUserData", JSON.stringify(data));
+  cookies.set("accessToken", data.accessToken);
 };
 
 export const removeAuthUserData = () => {
-  localStorage.removeItem("authUserData");
+  cookies.remove("authUserData");
+  cookies.remove("accessToken");
 };
 
 export const checkTokenExpire = token => {
